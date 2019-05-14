@@ -227,22 +227,20 @@ class Blockchain {
   validateChain() {
     let $this = this;
     let errorLog = [];
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       for (let i = $this.chain.length - 1; i >= 0; i--) {
         const block = $this.chain[i];
         const block_is_valid = await block.validate();
 
         if (!block_is_valid) {
-          errorLog.push({ message: 'Error' });
+          errorLog.push(block);
         }
       }
 
       if (errorLog.length > 0) {
-        console.log(errorLog);
-        reject(false);
+        resolve(errorLog);
       }
-
-      resolve(true);
+      resolve('No error detected.');
     });
   }
 }
