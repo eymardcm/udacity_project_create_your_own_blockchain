@@ -55,7 +55,7 @@ class Block {
       if (hash !== null && hash === recalcuated_block_hash) {
         resolve(true);
       } else {
-        reject(false);
+        resolve(false);
       }
     });
   }
@@ -74,12 +74,9 @@ class Block {
     // Decoding the data to retrieve the JSON representation of the object
     // Parse the data to an object to be retrieve.
     // Resolve with the data if the object isn't the Genesis block
-    let $this = this;
-    return new Promise(resolve => {
-      if ($this.height > 0) {
-        resolve(JSON.parse(hex2ascii($this.body)));
-      }
-    });
+    if (this.height > 0) {
+      return JSON.parse(hex2ascii(this.body));
+    }
   }
 }
 

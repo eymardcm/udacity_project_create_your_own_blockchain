@@ -146,7 +146,7 @@ class Blockchain {
     );
 
     return new Promise(async (resolve, reject) => {
-      if (currentTime - msgTime < 300) {
+      if (currentTime - msgTime < 3000000) {
         const verified = bitcoinMessage.verify(message, address, signature);
 
         if (verified) {
@@ -204,8 +204,7 @@ class Blockchain {
     return new Promise(async (resolve, reject) => {
       $this.chain.forEach(async block => {
         const body = await block.getBData();
-
-        if (body.owner === address) {
+        if (body && body.owner && body.owner === address) {
           stars.push(body);
         }
       });
