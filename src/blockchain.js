@@ -146,7 +146,7 @@ class Blockchain {
     );
 
     return new Promise(async (resolve, reject) => {
-      if (currentTime - msgTime < 30000000) {
+      if (currentTime - msgTime < 300) {
         const verified = bitcoinMessage.verify(message, address, signature);
 
         if (verified) {
