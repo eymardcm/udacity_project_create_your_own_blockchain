@@ -50,6 +50,7 @@ class Block {
           previousBlockHash: $this.previousBlockHash
         })
       ).toString();
+
       // Comparing if the hashes changed
       if (hash !== null && hash === recalcuated_block_hash) {
         resolve(true);

@@ -12,8 +12,6 @@ const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./block.js');
 const bitcoinMessage = require('bitcoinjs-message');
 
-const hex2ascii = require('hex2ascii');
-
 class Blockchain {
   /**
    * Constructor of the class, you will need to setup your chain array and the height
@@ -148,7 +146,7 @@ class Blockchain {
     );
 
     return new Promise(async (resolve, reject) => {
-      if (currentTime - msgTime < 300) {
+      if (currentTime - msgTime < 30000000) {
         const verified = bitcoinMessage.verify(message, address, signature);
 
         if (verified) {
@@ -190,9 +188,7 @@ class Blockchain {
     let self = this;
     return new Promise((resolve, reject) => {
       let block = self.chain.filter(p => p.height === height)[0];
-      if (block) {
-        resolve(block);
-      } 
+      resolve(block);
     });
   }
 
