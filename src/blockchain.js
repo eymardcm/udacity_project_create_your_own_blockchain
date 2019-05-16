@@ -146,7 +146,7 @@ class Blockchain {
     );
 
     return new Promise(async (resolve, reject) => {
-      if (currentTime - msgTime < 3000000) {
+      if (currentTime - msgTime < 300) {
         const verified = bitcoinMessage.verify(message, address, signature);
 
         if (verified) {
@@ -210,6 +210,7 @@ class Blockchain {
       });
 
       const valid = $this.validateChain();
+
       if (valid) {
         resolve(stars);
       }
@@ -226,21 +227,99 @@ class Blockchain {
   validateChain() {
     let $this = this;
     let errorLog = [];
-    return new Promise(async (resolve) => {
+
+    return new Promise(async (resolve, reject) => {
+      if ($this.chain.length < 1) {
+        errorLog.push({
+          type: 'Application',
+          message: `Something went wrong with the program.  The blockchain is empty`,
+          block: null
+        });
+      }
+      // Validate that chain height and length are in sync
+      if ($this.height !== $this.chain.length - 1) {
+        errorLog.push({
+          type: 'Blockchain Validation',
+          message: `This blockchain is corrupt.  Chain length and chain height are incongruent.`,
+          block: null
+        });
+      }
+
       for (let i = $this.chain.length - 1; i >= 0; i--) {
         const block = $this.chain[i];
-        const block_is_valid = await block.validate();
+        const previous_block = $this.chain[i - 1];
 
-        if (!block_is_valid) {
-          errorLog.push(block);
+        if (!block) {
+          errorLog.push({
+            type: 'Application',
+            message: `Something went wrong with the program.`,
+            block: null
+          });
+        }
+
+        if (block && !previous_block) {
+          if (block.height !== 0) {
+            errorLog.push({
+              type: 'Blockchain Validation',
+              message: `Something went wrong with the Genesis Block.`,
+              block: null
+            });
+          }
+        }
+
+        if (block && previous_block) {
+          if (block.height !== previous_block.height + 1) {
+            errorLog.push({
+              type: 'Blockchain Validation',
+              message: `Block ${
+                block.height
+              } is out of sequence with its neighboring previous block Block ${
+                previous_block.height
+              }.`,
+              block: block.height
+            });
+          }
+
+          if (block.previousBlockHash !== previous_block.hash) {
+            errorLog.push({
+              type: 'Block Validation',
+              message: `Block ${
+                block.height
+              } PreviousBlockHash does not match previous block Block ${
+                previous_block.height
+              } Hash.`,
+              block: block.height
+            });
+          }
+
+          const block_is_valid = await block.validate();
+
+          if (!block_is_valid) {
+            errorLog.push({
+              type: 'Block Validation',
+              message: `Block ${
+                block.height
+              } does not pass validation.  The hash check doesn't match.`,
+              block: block.height
+            });
+          }
         }
       }
 
       if (errorLog.length > 0) {
         resolve(errorLog);
       }
-      resolve('No error detected.');
+      resolve('The Blockchain is healthy.');
     });
+  }
+
+  // Utility functions
+  tamperBlock(height) {
+    this.chain[height].body = 'induced error';
+  }
+
+  transferBlock(height1, height2) {
+    this.chain[height1] = this.chain[height2];
   }
 }
 
